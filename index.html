@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Piège Vidéo Android</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            position: fixed;
+            width: 100%;
+        }
+        #trigger {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            font-size: 1.5rem;
+            z-index: 100;
+        }
+        #video-trap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 999;
+        }
+        #scary-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <button id="trigger">REGARDE ÇA</button>
+    <div id="video-trap">
+        <video id="scary-video" autoplay loop>
+            <source src="FNAF-Jumpscares.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <script>
+        let isActive = false;
+        const video = document.getElementById('scary-video');
+        
+        // Piège Android
+        function setupTraps() {
+            // Réapparition si touche retour
+            document.addEventListener('backbutton', reloadVideo, false);
+            
+            // Si changement d'appli
+            document.addEventListener('visibilitychange', () => {
+                if(document.hidden && isActive) reloadVideo();
+            });
+            
+            // Si tentative de sortie plein écran
+            document.addEventListener('fullscreenchange', () => {
+                if(!document.fullscreenElement && isActive) reloadVideo();
+            });
+        }
+        
+        function reloadVideo() {
+            video.currentTime = 0;
+            video.play();
+            document.getElementById('video-trap').style.display = 'block';
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            }
+        }
+
+        document.getElementById('trigger').addEventListener('click', function() {
+            this.style.display = 'none';
+            isActive = true;
+            reloadVideo();
+            
+            // Plein écran automatique
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            }
+            
+            // Fin de vidéo = libération
+            video.addEventListener('ended', function() {
+                video.loop = false;
+                isActive = false;
+                document.getElementById('video-trap').style.display = 'none';
+                if (document.exitFullscreen) document.exitFullscreen();
+            });
+        });
+        
+        // Pour Cordova/WebView Android
+        document.addEventListener('deviceready', setupTraps, false);
+        setupTraps();
+    </script>
+</body>
+</html>
